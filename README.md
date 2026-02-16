@@ -1,1 +1,4 @@
 # software_engineering_project
+The project is for people with disabilities and their friends who want to enjoy social activities without worrying about accessibility barriers. People who are frustrated by the lack of reliable, up-to-date information about how accessible public places are (especially bars and pubs).
+Our product is a web-app that scores and ranks pubs, bars, and social venues based on their accessibility that provides clear accessibility ratings (1-10) and up to date information.
+Unlike generic review platforms like Google Maps, which don’t focus on accessibility, or niche apps that lack comprehensive, user-friendly features, our product combines accessibility scoring and community feedback for socializing. It also includes a feature to organize and join group activities, making social events inclusive and fun for everyone.
