@@ -22,7 +22,7 @@
       "@/*": ["./*"],
       "@components/*": ["./components/*"],
       "@lib/*": ["./lib/*"],
-      "@styles/*": ["./styles/*"],
+      "@themes/*": ["./themes/*"],
       "@utils/*": ["./utils/*"]
     }
   },
