@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum UserRole {
+  USER
+  VENUE_OWNER
+  EVENT_ORGANIZER
+  MODERATOR
+  ADMIN
+}
+
+enum VenueCategory {
+  BAR
+  MUSEUM
+  PARK
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+model User {
+  id             String    @id @default(cuid())
+  name           String
+  email          String    @unique
+  password       String
+  role           UserRole  @default(USER)
+  avatar         String?
+  isPrivate      Boolean   @default(false)
+  isBanned       Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  ownedVenues    Venue[]         @relation("VenueOwner")
+  reviews        Review[]
+  ratings        Rating[]
+  eventReviews   EventReview[]
+  favorites      Favorite[]
+  organizedEvents Event[]        @relation("EventOrganizer")
+  sentMessages   Message[]       @relation("MessageSender")
+  receivedMessages Message[]     @relation("MessageRecipient")
+  mentorOf       Ambassador[]    @relation("Mentor")
+  menteeOf       Ambassador[]    @relation("Mentee")
+}
+
+model Venue {
+  id                   String        @id @default(cuid())
+  name                 String
+  description          String?
+  address              String
+  city                 String
+  lat                  Float?
+  lng                  Float?
+  category             VenueCategory
+  photos               String[]
+  ownerId              String
+  // Cached average scores (updated on each new rating)
+  avgAccessibilityScore Float        @default(0)
+  avgServiceScore       Float        @default(0)
+  avgEnvironmentScore   Float        @default(0)
+  totalRatings          Int          @default(0)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  // Relations
+  owner    User       @relation("VenueOwner", fields: [ownerId], references: [id])
+  reviews  Review[]
+  ratings  Rating[]
+  events   Event[]
+  favorites Favorite[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  venueId     String
+  organizerId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  venue     Venue         @relation(fields: [venueId], references: [id])
+  organizer User          @relation("EventOrganizer", fields: [organizerId], references: [id])
+  reviews   EventReview[]
+}
+
+model Review {
+  id           String    @id @default(cuid())
+  userId       String
+  venueId      String
+  comment      String
+  isDeleted    Boolean   @default(false)
+  ownerReply   String?
+  ownerReplyAt DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  venue Venue @relation(fields: [venueId], references: [id])
+
+  @@unique([userId, venueId])
+}
+
+model Rating {
+  id                  String   @id @default(cuid())
+  userId              String
+  venueId             String
+  accessibilityScore  Int
+  serviceScore        Int
+  environmentScore    Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  venue Venue @relation(fields: [venueId], references: [id])
+
+  @@unique([userId, venueId])
+}
+
+model EventReview {
+  id        String   @id @default(cuid())
+  userId    String
+  eventId   String
+  score     Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  event Event @relation(fields: [eventId], references: [id])
+
+  @@unique([userId, eventId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  venueId   String
+  createdAt DateTime @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  venue Venue @relation(fields: [venueId], references: [id])
+
+  @@unique([userId, venueId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  senderId    String
+  recipientId String
+  content     String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  sender    User @relation("MessageSender", fields: [senderId], references: [id])
+  recipient User @relation("MessageRecipient", fields: [recipientId], references: [id])
+}
+
+model Ambassador {
+  id        String   @id @default(cuid())
+  mentorId  String
+  menteeId  String
+  createdAt DateTime @default(now())
+
+  // Relations
+  mentor User @relation("Mentor", fields: [mentorId], references: [id])
+  mentee User @relation("Mentee", fields: [menteeId], references: [id])
+
+  @@unique([mentorId, menteeId])
+}
