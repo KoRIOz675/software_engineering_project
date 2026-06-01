@@ -44,3 +44,5 @@ next-env.d.ts
 /lib/generated/prisma
 
 software_engineering_project_context.txt
+
+/public/uploads
