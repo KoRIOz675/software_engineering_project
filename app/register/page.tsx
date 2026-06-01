@@ -4,10 +4,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { RoleSelect } from "@/components/auth/RoleSelect";
+import type { UserRole } from "@prisma/client";
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    role: UserRole;
+  }>({ name: "", email: "", password: "", role: "USER" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -103,6 +110,13 @@ export default function RegisterPage() {
   />
   </div>
   </div>
+
+  <RoleSelect
+    disabled={loading}
+    defaultValue={formData.role}
+    required
+    onChange={(role) => setFormData({ ...formData, role })}
+  />
 
   <div>
   <button

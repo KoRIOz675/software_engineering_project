@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { parseRegistrationRole } from "@/lib/roles";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { name, email, password } = body;
+    const role = parseRegistrationRole(body.role) ?? "USER";
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -35,11 +37,15 @@ export async function POST(req: Request) {
         name,
         email,
         password: hashedPassword,
+        role,
       },
     });
 
     return NextResponse.json(
-      { message: "User created successfully", user: { id: user.id, email: user.email } },
+      {
+        message: "User created successfully",
+        user: { id: user.id, email: user.email, role: user.role },
+      },
       { status: 201 }
     );
   } catch (error) {
