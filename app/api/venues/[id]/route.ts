@@ -1,1 +1,48 @@
-import { NextResponse } from "next/server"; import { prisma } from "@/lib/prisma"; export async function GET( _req: Request, { params }: { params: Promise<{ id: string }> } ) { try { const { id } = await params; const venue = await prisma.venue.findUnique({ where: { id }, select: { id: true, name: true, description: true, address: true, city: true, lat: true, lng: true, category: true, photos: true, avgAccessibilityScore: true, avgServiceScore: true, avgEnvironmentScore: true, totalRatings: true, createdAt: true, updatedAt: true, }, }); if (!venue) { return NextResponse.json( { message: "Venue not found" }, { status: 404 } ); } return NextResponse.json(venue); } catch (error) { console.error("Get Venue Error:", error); return NextResponse.json( { message: "Internal server error" }, { status: 500 } ); } }
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    const venue = await prisma.venue.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        address: true,
+        city: true,
+        lat: true,
+        lng: true,
+        category: true,
+        photos: true,
+        avgAccessibilityScore: true,
+        avgServiceScore: true,
+        avgEnvironmentScore: true,
+        totalRatings: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    if (!venue) {
+      return NextResponse.json(
+        { message: "Venue not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(venue);
+  } catch (error) {
+    console.error("Get Venue Error:", error);
+
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
