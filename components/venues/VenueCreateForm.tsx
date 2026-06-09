@@ -1,54 +1,41 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import VenuePhotoUploader from "@components/venues/VenuePhotoUploader";
 import { uploadVenuePhotos } from "@/lib/uploadVenuePhotos";
 
 const CATEGORIES = ["BAR", "MUSEUM", "PARK"] as const;
 
-export type EditableVenue = {
-  id: string;
-  name: string;
-  description: string | null;
-  address: string;
-  city: string;
-  lat: number | null;
-  lng: number | null;
-  category: string;
-  photos: string[];
-};
-
-type VenueEditFormProps = {
-  venue: EditableVenue;
-};
-
 const fieldClasses =
   "w-full rounded-lg border border-neutral-300 bg-transparent px-3 py-2 text-sm text-foreground outline-none transition focus:ring-2 focus:ring-foreground dark:border-neutral-700";
 
-export default function VenueEditForm({ venue }: VenueEditFormProps) {
-  const [name, setName] = useState(venue.name);
-  const [description, setDescription] = useState(venue.description ?? "");
-  const [address, setAddress] = useState(venue.address);
-  const [city, setCity] = useState(venue.city);
-  const [lat, setLat] = useState(venue.lat?.toString() ?? "");
-  const [lng, setLng] = useState(venue.lng?.toString() ?? "");
-  const [category, setCategory] = useState(venue.category);
-  const [existingPhotos, setExistingPhotos] = useState<string[]>(venue.photos);
+export default function VenueCreateForm() {
+  const router = useRouter();
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
+  const [category, setCategory] = useState<string>("");
   const [files, setFiles] = useState<File[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    setSuccess(false);
 
     // Client-side validation of required fields.
     if (!name.trim() || !address.trim() || !city.trim() || !category) {
       setError("Name, address, city and category are required.");
+      return;
+    }
+    if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
+      setError("Please select a valid category.");
       return;
     }
 
@@ -72,14 +59,13 @@ export default function VenueEditForm({ venue }: VenueEditFormProps) {
 
     setSaving(true);
     try {
-      // Upload only the newly added files, then merge with the kept existing
-      // photos.
-      const uploadedUrls = await uploadVenuePhotos(files);
-      const photos = [...existingPhotos, ...uploadedUrls];
+      // Upload selected files first, then create the venue with their URLs.
+      const photos = await uploadVenuePhotos(files);
 
-      const res = await fetch(`/api/venues/${venue.id}`, {
-        method: "PATCH",
+      const res = await fetch("/api/venues", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        // ownerId is intentionally omitted — the API uses the session user.
         body: JSON.stringify({
           name: name.trim(),
           description: description.trim() === "" ? null : description,
@@ -93,24 +79,21 @@ export default function VenueEditForm({ venue }: VenueEditFormProps) {
       });
 
       if (res.status === 401) {
-        throw new Error("You must be logged in to edit this venue.");
+        throw new Error("You must be logged in to create a venue.");
       }
       if (res.status === 403) {
-        throw new Error("Only the venue owner can edit this venue.");
+        throw new Error("Only venue owners can create venues.");
       }
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data?.message ?? "Failed to update venue.");
+        throw new Error(data?.message ?? "Failed to create venue.");
       }
 
-      // Reflect the saved state: uploaded files are now existing photos.
-      setExistingPhotos(photos);
-      setFiles([]);
-      setSuccess(true);
+      // Redirect to the newly created venue.
+      router.push(`/venues/${data.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
       setSaving(false);
     }
   }
@@ -126,21 +109,6 @@ export default function VenueEditForm({ venue }: VenueEditFormProps) {
           className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600 dark:bg-red-950/50"
         >
           {error}
-        </div>
-      )}
-
-      {success && (
-        <div
-          role="status"
-          className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-950/50"
-        >
-          <span>Venue updated successfully.</span>
-          <Link
-            href={`/venues/${venue.id}`}
-            className="font-medium underline underline-offset-2"
-          >
-            View venue
-          </Link>
         </div>
       )}
 
@@ -218,6 +186,9 @@ export default function VenueEditForm({ venue }: VenueEditFormProps) {
           required
           className={fieldClasses}
         >
+          <option value="" disabled>
+            Select a category
+          </option>
           {CATEGORIES.map((c) => (
             <option key={c} value={c}>
               {c.charAt(0) + c.slice(1).toLowerCase()}
@@ -259,27 +230,16 @@ export default function VenueEditForm({ venue }: VenueEditFormProps) {
       </div>
 
       {/* Photos */}
-      <VenuePhotoUploader
-        existing={existingPhotos}
-        onExistingChange={setExistingPhotos}
-        files={files}
-        onFilesChange={setFiles}
-      />
+      <VenuePhotoUploader files={files} onFilesChange={setFiles} />
 
       {/* Actions */}
       <div className="flex justify-end gap-3">
-        <Link
-          href={`/venues/${venue.id}`}
-          className="rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-foreground transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
-        >
-          Cancel
-        </Link>
         <button
           type="submit"
           disabled={saving}
           className="rounded-lg bg-foreground px-5 py-2 text-sm font-semibold text-background transition hover:bg-foreground/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-60"
         >
-          {saving ? "Saving..." : "Save changes"}
+          {saving ? "Creating..." : "Create venue"}
         </button>
       </div>
     </form>
