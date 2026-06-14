@@ -8,6 +8,16 @@ import { prisma } from "@/lib/prisma";
 const VENUE_CATEGORIES = ["BAR", "MUSEUM", "PARK"] as const;
 type VenueCategoryValue = (typeof VENUE_CATEGORIES)[number];
 
+const VALID_SORTS = ["newest", "accessibility", "service", "environment"] as const;
+type SortOrder = (typeof VALID_SORTS)[number];
+
+const DB_ORDER_BY: Record<SortOrder, Prisma.VenueOrderByWithRelationInput> = {
+  newest: { createdAt: "desc" },
+  accessibility: { avgAccessibilityScore: "desc" },
+  service: { avgServiceScore: "desc" },
+  environment: { avgEnvironmentScore: "desc" },
+};
+
 // Fields returned for the listing (used by the /venues page).
 const VENUE_LIST_SELECT = {
   id: true,
@@ -82,6 +92,13 @@ export async function GET(req: NextRequest) {
       where.avgAccessibilityScore = { gte: minScore };
     }
 
+    // sort: one of the valid sort orders, defaults to "newest"
+    const sortParam = searchParams.get("sort");
+    const sort: SortOrder =
+      sortParam && VALID_SORTS.includes(sortParam as SortOrder)
+        ? (sortParam as SortOrder)
+        : "newest";
+
     // lat + lng + radius: must be provided together
     const latParam = searchParams.get("lat");
     const lngParam = searchParams.get("lng");
@@ -129,7 +146,16 @@ export async function GET(req: NextRequest) {
           distance: distanceKm(geo.lat, geo.lng, venue.lat!, venue.lng!),
         }))
         .filter(({ distance }) => distance <= geo.radius)
-        .sort((a, b) => a.distance - b.distance);
+        .sort((a, b) => {
+          if (sort === "accessibility")
+            return b.venue.avgAccessibilityScore - a.venue.avgAccessibilityScore;
+          if (sort === "service")
+            return b.venue.avgServiceScore - a.venue.avgServiceScore;
+          if (sort === "environment")
+            return b.venue.avgEnvironmentScore - a.venue.avgEnvironmentScore;
+          // "newest" and default: sort by proximity
+          return a.distance - b.distance;
+        });
 
       const total = withinRadius.length;
       const paged = withinRadius
@@ -157,7 +183,7 @@ export async function GET(req: NextRequest) {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: "desc" },
+        orderBy: DB_ORDER_BY[sort],
         select: VENUE_LIST_SELECT,
       }),
       prisma.venue.count({ where }),

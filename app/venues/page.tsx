@@ -5,11 +5,12 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import VenueCard from "@components/venues/VenueCard";
 import SearchBar from "@components/venues/SearchBar";
+import FilterPanel from "@components/venues/FilterPanel";
 
 const LIMIT = 10;
 
 // Filter params forwarded to the API.
-const FILTER_KEYS = ["city", "category", "minScore", "lat", "lng", "radius"] as const;
+const FILTER_KEYS = ["city", "category", "minScore", "lat", "lng", "radius", "sort"] as const;
 
 type VenueListItem = {
   id: string;
@@ -198,10 +199,16 @@ export default function VenuesPage() {
           </div>
         }
       >
-        <div className="mb-8 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
+        <div className="mb-6 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800">
           <SearchBar action="/venues" />
         </div>
-        <VenuesList />
+
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <FilterPanel />
+          <div className="min-w-0 flex-1">
+            <VenuesList />
+          </div>
+        </div>
       </Suspense>
     </main>
   );
