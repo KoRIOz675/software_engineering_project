@@ -3,11 +3,17 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand: #22c55e;
+  --brand-dark: #14532d;
+  --brand-light: #dcfce7;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -16,6 +22,7 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --brand-light: #052e16;
   }
 }
 
