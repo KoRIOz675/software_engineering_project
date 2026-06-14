@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import VenueRatingForm from "@components/venues/VenueRatingForm";
 
 type VenueDetail = {
   id: string;
@@ -53,44 +55,60 @@ function ScoreBreakdown({ label, score }: { label: string; score: number }) {
   );
 }
 
+type VenueReview = {
+  id: string;
+  comment: string;
+  createdAt: string;
+  user: { id: string; name: string; avatar: string | null };
+};
+
 export default function VenueDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const { data: session } = useSession();
+  const sessionUserId = (session?.user as { id?: string } | undefined)?.id;
 
   const [venue, setVenue] = useState<VenueDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let active = true;
+  const [reviews, setReviews] = useState<VenueReview[]>([]);
 
-    async function fetchVenue() {
-      setLoading(true);
-      setNotFound(false);
-      setError(false);
-      try {
-        const res = await fetch(`/api/venues/${id}`);
-        if (res.status === 404) {
-          if (active) setNotFound(true);
-          return;
-        }
-        if (!res.ok) throw new Error("Failed to fetch venue");
-        const json: VenueDetail = await res.json();
-        if (active) setVenue(json);
-      } catch (err) {
-        console.error(err);
-        if (active) setError(true);
-      } finally {
-        if (active) setLoading(false);
-      }
+  const fetchVenue = useCallback(async () => {
+    setNotFound(false);
+    setError(false);
+    try {
+      const res = await fetch(`/api/venues/${id}`);
+      if (res.status === 404) { setNotFound(true); return; }
+      if (!res.ok) throw new Error("Failed to fetch venue");
+      const json: VenueDetail = await res.json();
+      setVenue(json);
+    } catch (err) {
+      console.error(err);
+      setError(true);
+    } finally {
+      setLoading(false);
     }
-
-    if (id) fetchVenue();
-    return () => {
-      active = false;
-    };
   }, [id]);
+
+  const fetchReviews = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/venues/${id}/reviews`);
+      if (!res.ok) return;
+      const json = await res.json();
+      setReviews(json.reviews ?? []);
+    } catch {
+      // non-critical — leave reviews empty
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchVenue();
+      fetchReviews();
+    }
+  }, [id, fetchVenue, fetchReviews]);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-10">
@@ -240,29 +258,74 @@ export default function VenueDetailPage() {
             </section>
           )}
 
-          {/* Reviews */}
+          {/* Ratings & Reviews */}
           <section aria-labelledby="reviews-heading">
-            <div className="mb-3 flex items-center justify-between gap-4">
-              <h2
-                id="reviews-heading"
-                className="text-lg font-semibold text-foreground"
-              >
-                Reviews
-              </h2>
-              <button
-                type="button"
-                className="rounded-lg bg-foreground px-4 py-2 text-sm font-semibold text-background transition hover:bg-foreground/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                Leave a review
-              </button>
-            </div>
+            <h2
+              id="reviews-heading"
+              className="mb-4 text-lg font-semibold text-foreground"
+            >
+              Ratings &amp; Reviews
+            </h2>
 
-            {/* Reviews are not exposed by the API yet — show an empty state. */}
-            <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
-              <p className="text-sm text-neutral-500">
-                No reviews yet. Be the first to share your experience.
+            {/* Rating form */}
+            {sessionUserId ? (
+              <div className="mb-6">
+                <VenueRatingForm
+                  venueId={venue.id}
+                  onSuccess={() => {
+                    fetchVenue();
+                    fetchReviews();
+                  }}
+                />
+              </div>
+            ) : (
+              <p className="mb-6 text-sm text-neutral-500">
+                <Link
+                  href={`/login?callbackUrl=/venues/${venue.id}`}
+                  className="text-brand underline-offset-2 hover:underline"
+                >
+                  Log in
+                </Link>{" "}
+                to leave a rating.
               </p>
-            </div>
+            )}
+
+            {/* Review comments list */}
+            {reviews.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
+                <p className="text-sm text-neutral-500">
+                  No reviews yet. Be the first to share your experience.
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-foreground">
+                        {review.user.name}
+                      </span>
+                      <time
+                        dateTime={review.createdAt}
+                        className="ml-auto text-xs text-neutral-400"
+                      >
+                        {new Date(review.createdAt).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </time>
+                    </div>
+                    <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                      {review.comment}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         </article>
       )}
