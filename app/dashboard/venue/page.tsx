@@ -54,7 +54,7 @@ export default async function VenueDashboardPage() {
   // Authenticated but wrong role → access denied state.
   if (sessionUser.role !== "VENUE_OWNER") {
     return (
-      <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center gap-3 px-4 py-10 text-center">
+      <main className="mx-auto flex min-h-[60vh] max-w-7xl flex-col items-center justify-center gap-3 px-4 py-10 text-center">
         <h1 className="text-xl font-semibold text-foreground">Access denied</h1>
         <p className="text-sm text-neutral-500">
           This dashboard is only available to venue owners.
@@ -113,7 +113,7 @@ export default async function VenueDashboardPage() {
   };
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-foreground">Venue dashboard</h1>
         {/* Venue creation form route does not exist yet — placeholder CTA. */}

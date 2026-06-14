@@ -117,7 +117,7 @@ function EventsContent() {
         onSubmit={applyFilters}
         className="mb-8 flex flex-col gap-3 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800 sm:flex-row sm:items-end"
       >
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-1 flex-col gap-1 text-sm">
           <span className="text-neutral-500">From</span>
           <input
             type="date"
@@ -127,7 +127,7 @@ function EventsContent() {
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-1 flex-col gap-1 text-sm">
           <span className="text-neutral-500">To</span>
           <input
             type="date"
@@ -156,20 +156,20 @@ function EventsContent() {
       </form>
 
       {loading && (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="text-sm text-neutral-500">Loading events...</div>
+        <div className="rounded-xl border border-dashed border-neutral-300 p-12 text-center dark:border-neutral-700">
+          <p className="text-sm text-neutral-500">Loading events…</p>
         </div>
       )}
 
       {!loading && error && (
-        <div className="flex min-h-[40vh] items-center justify-center">
-          <div className="text-sm text-red-600">{error}</div>
+        <div className="rounded-xl border border-dashed border-red-200 p-12 text-center dark:border-red-900">
+          <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
       {!loading && !error && data && data.events.length === 0 && (
-        <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 text-center">
-          <p className="text-sm text-neutral-500">No upcoming events found.</p>
+        <div className="rounded-xl border border-dashed border-neutral-300 p-12 text-center dark:border-neutral-700">
+          <p className="mb-3 text-sm text-neutral-500">No upcoming events found.</p>
           {hasFilters && (
             <button
               onClick={clearFilters}
@@ -188,7 +188,7 @@ function EventsContent() {
             {data.pagination.total === 1 ? "event" : "events"} found
           </p>
 
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {data.events.map((event) => (
               <EventCard
                 key={event.id}
@@ -252,7 +252,7 @@ function EventsContent() {
 
 export default function EventsPage() {
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-2xl font-bold text-foreground">Events</h1>
       <Suspense
         fallback={

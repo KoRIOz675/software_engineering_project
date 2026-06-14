@@ -112,19 +112,34 @@ export default function EventCreateForm() {
         </div>
       )}
 
-      {/* Title */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="title" className="text-sm font-medium text-foreground">
-          Title <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          className={fieldClasses}
-        />
+      {/* Title + Date row */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="title" className="text-sm font-medium text-foreground">
+            Title <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            className={fieldClasses}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="date" className="text-sm font-medium text-foreground">
+            Date & time <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="date"
+            type="datetime-local"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className={fieldClasses}
+          />
+        </div>
       </div>
 
       {/* Description */}
@@ -137,21 +152,6 @@ export default function EventCreateForm() {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
-          className={fieldClasses}
-        />
-      </div>
-
-      {/* Date & time */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="date" className="text-sm font-medium text-foreground">
-          Date & time <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="date"
-          type="datetime-local"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
           className={fieldClasses}
         />
       </div>

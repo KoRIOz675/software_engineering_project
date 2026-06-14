@@ -47,7 +47,7 @@ export default function Home() {
 
       {/* Category cards */}
       <section className="bg-neutral-50 px-4 py-16 dark:bg-neutral-900">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-7xl">
           <h2 className="mb-2 text-center text-2xl font-bold text-foreground">
             Browse by category
           </h2>
@@ -74,7 +74,7 @@ export default function Home() {
 
       {/* Events CTA */}
       <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-7xl">
           <div className="flex flex-col items-center gap-6 rounded-2xl bg-brand p-8 text-center sm:flex-row sm:text-left">
             <div className="flex-1">
               <h2 className="text-xl font-bold text-white">Discover upcoming events</h2>
@@ -94,7 +94,7 @@ export default function Home() {
 
       {/* How it works */}
       <section className="bg-neutral-50 px-4 py-16 dark:bg-neutral-900">
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-7xl">
           <h2 className="mb-2 text-center text-2xl font-bold text-foreground">
             How it works
           </h2>
@@ -119,7 +119,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-neutral-200 px-4 py-6 dark:border-neutral-800">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <span className="text-sm font-bold text-brand">OpenPlaces</span>
           <span className="text-xs text-neutral-400">by Matrix Green · ISEP 2026</span>
         </div>

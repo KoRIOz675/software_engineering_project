@@ -5,7 +5,7 @@ import VenueCreateForm from "@components/venues/VenueCreateForm";
 
 export default function VenueCreatePage() {
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <Link
         href="/venues"
         className="mb-6 inline-flex items-center text-sm font-medium text-neutral-500 transition hover:text-foreground"
