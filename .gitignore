@@ -46,3 +46,5 @@ next-env.d.ts
 software_engineering_project_context.txt
 
 /public/uploads
+
+.codegraph/
