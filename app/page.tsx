@@ -21,9 +21,6 @@ export default function Home() {
       <section className="bg-white px-4 py-20 dark:bg-neutral-950">
         <div className="mx-auto flex max-w-2xl flex-col items-center gap-8 text-center">
           <div className="flex flex-col gap-3">
-            <span className="mx-auto rounded-full bg-brand-light px-4 py-1 text-xs font-semibold uppercase tracking-widest text-brand-dark dark:text-brand">
-              Community-powered accessibility ratings
-            </span>
             <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-6xl">
               Find places that{" "}
               <span className="text-brand">work for everyone</span>

@@ -25,6 +25,9 @@
 - **avgScore on event detail**: computed at query time from `EventReview[]`, not cached — add caching if perf becomes issue
 - **Client components pattern**: all pages use `"use client"` + `useEffect` for data fetching, matching existing venue pages pattern
 - **`onPointerUp` for slider**: FilterPanel minScore slider updates URL only on pointer release, not on every drag tick
+- **Branding**: app name is **OpenPlaces** (team: Matrix Green); brand green `#22c55e` as `--color-brand` CSS var in `globals.css`, usable as `text-brand`/`bg-brand`/`border-brand` in Tailwind
+- **Venue create route**: placed at `/venues/manage/create` (not `/venues/create`) to reuse existing `/venues/manage` proxy rule for VENUE_OWNER
+- **SessionProvider**: wrapped in `app/providers.tsx`, added to `app/layout.tsx` — required for `useSession` in Navbar and other client components
 <!-- claude-memory:end:technical-decisions -->
 
 <!-- claude-memory:start:tasks -->
@@ -45,11 +48,11 @@
 ### Auth / Proxy
 - ✅ `proxy.ts` — Next.js 16 proxy (replaces middleware); role-based routing via `getToken` + `getRoleHomePath`
 
-### MVP Remaining
+### MVP Remaining (priority order)
+- ✅ **Venue creation form** (#42) — `app/venues/manage/create/page.tsx` + `VenueCreateForm` component; protected by `/venues/manage` proxy rule
+- 🔲 **Event CRUD** (#78 → #79 API, #80 create form, #81 edit/delete, #82 dashboard)
 - 🔲 **Review Event** (#67 → #68 API, #69 UI) — `POST /api/events/[id]/reviews`, review form on detail page (score 1–10)
 - 🔲 **Review Social Venue** (#58 → #59 rating API, #60 avg score cache, #61 form, #62 display)
-- 🔲 **Venue creation form** (#42) — page at `/venues/create` (POST API already exists, VENUE_OWNER only)
-- 🔲 **Event CRUD** (#78 → #79 API, #80 create form, #81 edit/delete, #82 dashboard)
 - 🔲 **Admin user management** (#86 → #87 API ban/delete, #88 admin page)
 
 ### Closeable GitHub Issues (work done)
@@ -64,11 +67,13 @@
 _Last updated: 2026-06-14_
 
 - Removed conflicting `middleware.ts` (deprecated in Next.js 16); existing `proxy.ts` already handles auth + role-based routing
-- Analyzed full MVP against codebase and GitHub issues; identified events, ratings, reviews, admin as missing
 - Added `sort` param to `GET /api/venues`; refactored `SearchBar` to add Near me geolocation button
 - Created `FilterPanel` component (category, minScore slider, sort) and updated `/venues` page layout
 - Built full events API: `GET /api/events` (list+filters) and `GET /api/events/[id]` (detail+avgScore)
 - Built `/events` listing page with date filter and `EventCard` component
 - Built `/events/[id]` detail page with venue scores, reviews list, Add to Calendar stub
-- MVP progress: Find Activities ✅, Attend Event ✅ — next: Review Event, Review Venue, Event CRUD, Admin
+- Built `VenueCreateForm` + `app/venues/manage/create` page (VENUE_OWNER, protected by proxy)
+- Added `SessionProvider` wrapper (`app/providers.tsx`), global `Navbar` with role-aware links + mobile menu
+- Applied OpenPlaces branding: green (`#22c55e`) CSS var, renamed app from AccessiVenue, redesigned home page with category cards, events CTA, how-it-works section, footer
+- MVP progress: Find Activities ✅, Attend Event ✅, Venue Creation ✅ — next: Event CRUD
 <!-- claude-memory:end:session-summary -->
