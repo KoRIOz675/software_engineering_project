@@ -93,24 +93,24 @@ function VenuesList() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="text-sm text-neutral-500">Loading venues...</div>
+      <div className="rounded-xl border border-dashed border-neutral-300 p-12 text-center dark:border-neutral-700">
+        <p className="text-sm text-neutral-500">Loading venues…</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="text-sm text-red-600">{error}</div>
+      <div className="rounded-xl border border-dashed border-red-200 p-12 text-center dark:border-red-900">
+        <p className="text-sm text-red-600">{error}</p>
       </div>
     );
   }
 
   if (!data || data.venues.length === 0) {
     return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <div className="text-sm text-neutral-500">No venues found.</div>
+      <div className="rounded-xl border border-dashed border-neutral-300 p-12 text-center dark:border-neutral-700">
+        <p className="text-sm text-neutral-500">No venues found.</p>
       </div>
     );
   }
@@ -190,7 +190,7 @@ function VenuesList() {
 
 export default function VenuesPage() {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <h1 className="mb-8 text-2xl font-bold text-foreground">Venues</h1>
       <Suspense
         fallback={

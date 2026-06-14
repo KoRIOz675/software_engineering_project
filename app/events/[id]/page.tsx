@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import EventReviewForm from "@components/events/EventReviewForm";
 
 type EventReview = {
   id: string;
@@ -69,38 +70,30 @@ export default function EventDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-
-    async function fetchEvent() {
-      setLoading(true);
-      setNotFound(false);
-      setError(false);
-      try {
-        const res = await fetch(`/api/events/${id}`);
-        if (res.status === 404) {
-          if (active) setNotFound(true);
-          return;
-        }
-        if (!res.ok) throw new Error("Failed to fetch event");
-        const json: EventDetail = await res.json();
-        if (active) setEvent(json);
-      } catch (err) {
-        console.error(err);
-        if (active) setError(true);
-      } finally {
-        if (active) setLoading(false);
-      }
+  const fetchEvent = useCallback(async () => {
+    setNotFound(false);
+    setError(false);
+    try {
+      const res = await fetch(`/api/events/${id}`);
+      if (res.status === 404) { setNotFound(true); return; }
+      if (!res.ok) throw new Error("Failed to fetch event");
+      const json: EventDetail = await res.json();
+      setEvent(json);
+    } catch (err) {
+      console.error(err);
+      setError(true);
+    } finally {
+      setLoading(false);
     }
+  }, [id]);
 
+  useEffect(() => {
     if (id) fetchEvent();
-    return () => {
-      active = false;
-    };
+    return () => {};
   }, [id]);
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <Link
         href="/events"
         className="mb-6 inline-flex items-center text-sm font-medium text-neutral-500 transition hover:text-foreground"
@@ -139,7 +132,7 @@ export default function EventDetailPage() {
 
       {!loading && event && (
         <article className="flex flex-col gap-8">
-          {/* Header */}
+          {/* Header — full width */}
           <header className="flex flex-col gap-3">
             <time
               dateTime={new Date(event.date).toISOString()}
@@ -192,105 +185,132 @@ export default function EventDetailPage() {
             )}
           </header>
 
-          {/* Description */}
-          {event.description && (
-            <section aria-labelledby="about-heading">
-              <h2 id="about-heading" className="mb-2 text-lg font-semibold">
-                About
-              </h2>
-              <p className="leading-7 text-neutral-600 dark:text-neutral-300">
-                {event.description}
-              </p>
-            </section>
-          )}
-
-          {/* Venue */}
-          <section aria-labelledby="venue-heading">
-            <h2 id="venue-heading" className="mb-3 text-lg font-semibold">
-              Venue
-            </h2>
-            <Link
-              href={`/venues/${event.venue.id}`}
-              className="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-foreground">{event.venue.name}</p>
-                  <p className="text-sm text-neutral-500">
-                    {event.venue.address}, {event.venue.city}
+          {/* Body — 2-column on large screens */}
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            {/* Main content */}
+            <div className="flex flex-col gap-8 lg:col-span-2">
+              {/* Description */}
+              {event.description && (
+                <section aria-labelledby="about-heading">
+                  <h2 id="about-heading" className="mb-2 text-lg font-semibold">
+                    About
+                  </h2>
+                  <p className="leading-7 text-neutral-600 dark:text-neutral-300">
+                    {event.description}
                   </p>
-                </div>
-                <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
-                  {CATEGORY_LABELS[event.venue.category] ?? event.venue.category}
-                </span>
-              </div>
-              <div className="mt-2 grid grid-cols-3 gap-3">
-                <ScoreChip label="Accessibility" score={event.venue.avgAccessibilityScore} />
-                <ScoreChip label="Service" score={event.venue.avgServiceScore} />
-                <ScoreChip label="Environment" score={event.venue.avgEnvironmentScore} />
-              </div>
-            </Link>
-          </section>
+                </section>
+              )}
 
-          {/* Add to Calendar — wired up in #84 */}
-          <div>
-            <a
-              href={`/api/events/${event.id}/ics`}
-              className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-foreground transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
-            >
-              Add to Calendar
-            </a>
-          </div>
+              {/* Reviews */}
+              <section aria-labelledby="reviews-heading">
+                <h2 id="reviews-heading" className="mb-3 text-lg font-semibold">
+                  Reviews
+                </h2>
 
-          {/* Reviews */}
-          <section aria-labelledby="reviews-heading">
-            <h2 id="reviews-heading" className="mb-3 text-lg font-semibold">
-              Reviews
-            </h2>
-
-            {event.reviews.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
-                <p className="text-sm text-neutral-500">
-                  No reviews yet. Be the first to share your experience.
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-4">
-                {event.reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-foreground">
-                        {review.user.name}
-                      </span>
-                      <span
-                        className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${scoreColorClasses(review.score)}`}
-                      >
-                        {review.score} / 10
-                      </span>
-                      <time
-                        dateTime={review.createdAt}
-                        className="ml-auto text-xs text-neutral-400"
-                      >
-                        {new Date(review.createdAt).toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
-                      </time>
-                    </div>
-                    {review.comment && (
-                      <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                        {review.comment}
-                      </p>
-                    )}
+                {sessionUserId ? (
+                  <div className="mb-6">
+                    <EventReviewForm
+                      eventId={event.id}
+                      existingScore={event.reviews.find((r) => r.user.id === sessionUserId)?.score}
+                      existingComment={event.reviews.find((r) => r.user.id === sessionUserId)?.comment}
+                      onSuccess={fetchEvent}
+                    />
                   </div>
-                ))}
+                ) : (
+                  <p className="mb-6 text-sm text-neutral-500">
+                    <Link href={`/login?callbackUrl=/events/${event.id}`} className="text-brand underline-offset-2 hover:underline">
+                      Log in
+                    </Link>{" "}
+                    to leave a review.
+                  </p>
+                )}
+
+                {event.reviews.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-neutral-300 p-8 text-center dark:border-neutral-700">
+                    <p className="text-sm text-neutral-500">
+                      No reviews yet. Be the first to share your experience.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-4">
+                    {event.reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-foreground">
+                            {review.user.name}
+                          </span>
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${scoreColorClasses(review.score)}`}
+                          >
+                            {review.score} / 10
+                          </span>
+                          <time
+                            dateTime={review.createdAt}
+                            className="ml-auto text-xs text-neutral-400"
+                          >
+                            {new Date(review.createdAt).toLocaleDateString("en-GB", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </time>
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-neutral-600 dark:text-neutral-300">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* Sidebar */}
+            <aside className="flex flex-col gap-6">
+              {/* Venue */}
+              <section aria-labelledby="venue-heading">
+                <h2 id="venue-heading" className="mb-3 text-lg font-semibold">
+                  Venue
+                </h2>
+                <Link
+                  href={`/venues/${event.venue.id}`}
+                  className="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 transition hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-600"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">{event.venue.name}</p>
+                      <p className="text-sm text-neutral-500">
+                        {event.venue.address}, {event.venue.city}
+                      </p>
+                    </div>
+                    <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300">
+                      {CATEGORY_LABELS[event.venue.category] ?? event.venue.category}
+                    </span>
+                  </div>
+                  <div className="mt-2 grid grid-cols-3 gap-3">
+                    <ScoreChip label="Accessibility" score={event.venue.avgAccessibilityScore} />
+                    <ScoreChip label="Service" score={event.venue.avgServiceScore} />
+                    <ScoreChip label="Environment" score={event.venue.avgEnvironmentScore} />
+                  </div>
+                </Link>
+              </section>
+
+              {/* Add to Calendar */}
+              <div>
+                <a
+                  href={`/api/events/${event.id}/ics`}
+                  className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-foreground transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                >
+                  Add to Calendar
+                </a>
               </div>
-            )}
-          </section>
+            </aside>
+          </div>
         </article>
       )}
     </main>

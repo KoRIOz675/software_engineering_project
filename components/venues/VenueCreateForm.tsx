@@ -98,19 +98,39 @@ export default function VenueCreateForm() {
         </div>
       )}
 
-      {/* Name */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-foreground">
-          Name <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className={fieldClasses}
-        />
+      {/* Name + Category row */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="name" className="text-sm font-medium text-foreground">
+            Name <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className={fieldClasses}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="category" className="text-sm font-medium text-foreground">
+            Category <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="category"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            required
+            className={fieldClasses}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c.charAt(0) + c.slice(1).toLowerCase()}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Description */}
@@ -127,54 +147,34 @@ export default function VenueCreateForm() {
         />
       </div>
 
-      {/* Address */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="address" className="text-sm font-medium text-foreground">
-          Address <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="address"
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          required
-          className={fieldClasses}
-        />
-      </div>
-
-      {/* City */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="city" className="text-sm font-medium text-foreground">
-          City <span className="text-red-500">*</span>
-        </label>
-        <input
-          id="city"
-          type="text"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          required
-          className={fieldClasses}
-        />
-      </div>
-
-      {/* Category */}
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="category" className="text-sm font-medium text-foreground">
-          Category <span className="text-red-500">*</span>
-        </label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          required
-          className={fieldClasses}
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c.charAt(0) + c.slice(1).toLowerCase()}
-            </option>
-          ))}
-        </select>
+      {/* Address + City row */}
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="address" className="text-sm font-medium text-foreground">
+            Address <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="address"
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+            className={fieldClasses}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="city" className="text-sm font-medium text-foreground">
+            City <span className="text-red-500">*</span>
+          </label>
+          <input
+            id="city"
+            type="text"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+            required
+            className={fieldClasses}
+          />
+        </div>
       </div>
 
       {/* Coordinates */}

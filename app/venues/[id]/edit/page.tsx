@@ -45,7 +45,7 @@ export default function VenueEditPage() {
   }, [id]);
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10">
+    <main className="mx-auto max-w-7xl px-4 py-10">
       <div className="mb-6 flex flex-wrap gap-4 text-sm font-medium text-neutral-500">
         <Link href={`/venues/${id}`} className="transition hover:text-foreground">
           ← Back to venue
