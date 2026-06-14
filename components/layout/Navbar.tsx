@@ -32,8 +32,8 @@ export default function Navbar() {
             </Link>
           )}
           {role === "EVENT_ORGANIZER" && (
-            <Link href="/events/manage/create" className="text-sm font-medium text-neutral-600 transition hover:text-brand dark:text-neutral-400">
-              Add event
+            <Link href="/dashboard/events" className="text-sm font-medium text-neutral-600 transition hover:text-brand dark:text-neutral-400">
+              My events
             </Link>
           )}
           {(role === "MODERATOR" || role === "ADMIN") && (
@@ -102,7 +102,7 @@ export default function Navbar() {
               <Link href="/venues/manage/create" onClick={() => setMenuOpen(false)} className="hover:text-brand">Add venue</Link>
             )}
             {role === "EVENT_ORGANIZER" && (
-              <Link href="/events/manage/create" onClick={() => setMenuOpen(false)} className="hover:text-brand">Add event</Link>
+              <Link href="/dashboard/events" onClick={() => setMenuOpen(false)} className="hover:text-brand">My events</Link>
             )}
             <div className="flex gap-3 border-t border-neutral-100 pt-3 dark:border-neutral-800">
               {session ? (

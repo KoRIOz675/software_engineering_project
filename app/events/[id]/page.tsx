@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 type EventReview = {
@@ -60,6 +61,8 @@ function ScoreChip({ label, score }: { label: string; score: number }) {
 export default function EventDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
+  const { data: session } = useSession();
+  const sessionUserId = (session?.user as { id?: string } | undefined)?.id;
 
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -155,7 +158,17 @@ export default function EventDetailPage() {
               })}
             </time>
 
-            <h1 className="text-3xl font-bold text-foreground">{event.title}</h1>
+            <div className="flex items-start justify-between gap-4">
+              <h1 className="text-3xl font-bold text-foreground">{event.title}</h1>
+              {sessionUserId === event.organizer.id && (
+                <Link
+                  href={`/events/${event.id}/edit`}
+                  className="shrink-0 rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+                >
+                  Edit
+                </Link>
+              )}
+            </div>
 
             <p className="text-sm text-neutral-500">
               Organized by{" "}

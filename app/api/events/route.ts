@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getServerSession } from "next-auth";
 import { Prisma } from "@prisma/client";
+import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const EVENT_LIST_SELECT = {
@@ -91,5 +93,57 @@ export async function GET(req: NextRequest) {
       { message: "Internal server error" },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    const sessionUser = session?.user as { id?: string; role?: string } | undefined;
+
+    if (!sessionUser?.id) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    if (sessionUser.role !== "EVENT_ORGANIZER") {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { title, description, date, venueId } = body;
+
+    if (!title || !date || !venueId) {
+      return NextResponse.json(
+        { message: "Missing required fields: title, date, venueId" },
+        { status: 400 }
+      );
+    }
+
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return NextResponse.json(
+        { message: "date must be a valid ISO date" },
+        { status: 400 }
+      );
+    }
+
+    const venueExists = await prisma.venue.findUnique({ where: { id: venueId }, select: { id: true } });
+    if (!venueExists) {
+      return NextResponse.json({ message: "Venue not found" }, { status: 404 });
+    }
+
+    const event = await prisma.event.create({
+      data: {
+        title: title.trim(),
+        description: description?.trim() || null,
+        date: parsedDate,
+        venueId,
+        organizerId: sessionUser.id,
+      },
+    });
+
+    return NextResponse.json(event, { status: 201 });
+  } catch (error) {
+    console.error("Create Event Error:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
